@@ -1,420 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Custom Cursor</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Cursor</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 200vh;
-            cursor: none;
-            overflow-x: hidden;
-        }
+    #cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 36px;
+      height: 36px;
+      background-color: #555555;
+      border: 2px solid #333;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+      z-index: 9999;
+    }
 
-        #cursor {
-            position: fixed;
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 100%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: all 0.15s ease-out;
-            backdrop-filter: blur(10px);
-            mix-blend-mode: difference;
-        }
+    #cursor.cursor--text {
+      width: 48px;
+      height: 48px;
+    }
 
-        #cursor.cursor--text {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            transform: translate(-50%, -50%);
-        }
-
-        #cursor.is-locked {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        h1, h2, h3 {
-            color: white;
-            margin: 2rem 0;
-            font-weight: 300;
-        }
-
-        h1 {
-            font-size: 4rem;
-            text-align: center;
-            margin: 4rem 0;
-        }
-
-        h2 {
-            font-size: 2.5rem;
-            margin: 3rem 0 1rem 0;
-        }
-
-        h3 {
-            font-size: 1.8rem;
-            margin: 2rem 0 1rem 0;
-        }
-
-        p {
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.8;
-            margin: 1.5rem 0;
-            font-size: 1.2rem;
-        }
-
-        blockquote {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 4px solid rgba(255, 255, 255, 0.5);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            font-style: italic;
-            color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            margin: 1rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.6);
-        }
-
-        .tile {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 2rem;
-            border-radius: 20px;
-            margin: 1rem;
-            display: inline-block;
-            width: 300px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .tile h3 {
-            margin-top: 0;
-            color: white;
-        }
-
-        .tile p {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .fab {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            cursor: none;
-            transition: all 0.3s ease;
-        }
-
-        .fab svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-            transition: transform 0.3s ease;
-        }
-
-        .fab--toggled svg {
-            transform: rotate(45deg);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-
-        .footer {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 3rem 0;
-            margin-top: 4rem;
-            text-align: center;
-        }
-
-        .footer a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            margin: 0 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
-
-        .footer a:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .newsletter__button {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            border: none;
-            padding: 1rem 2rem;
-            color: white;
-            border-radius: 50px;
-            font-weight: bold;
-            margin: 1rem;
-            cursor: none;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-                margin: 2rem 0;
-            }
-            
-            .container {
-                padding: 1rem;
-            }
-            
-            .tile {
-                width: 100%;
-                margin: 0.5rem 0;
-            }
-        }
-    </style>
+    #cursor.is-locked {
+      border-radius: 12px;
+    }
+  </style>
 </head>
 <body>
-    <div id="cursor"></div>
-    
-    <div class="container">
-        <h1>Interactive Custom Cursor</h1>
-        
-        <p>Move your cursor around this page to see the interactive effects. The cursor will change size and behavior based on the elements you hover over.</p>
-        
-        <h2>Text Elements</h2>
-        <p>When you hover over text elements like paragraphs and headings, the cursor will adapt to the font size and show a text cursor indicator.</p>
-        
-        <h3>Subheading Example</h3>
-        <p>This paragraph demonstrates how the cursor responds to different text sizes. The cursor becomes larger and changes its appearance to indicate you're hovering over readable text content.</p>
-        
-        <blockquote>
-            "This is a blockquote element. Notice how the cursor adapts to the text size here as well, creating a consistent reading experience across different text elements."
-        </blockquote>
-        
-        <h2>Interactive Buttons</h2>
-        <p>Hover over these buttons to see the cursor lock onto them and follow your mouse movement:</p>
-        
-        <a href="#" class="btn">Primary Button</a>
-        <a href="#" class="btn">Secondary Button</a>
-        <button class="newsletter__button">Subscribe</button>
-        
-        <h2>Interactive Tiles</h2>
-        <p>These tiles also have the interactive cursor effect with subtle movement:</p>
-        
-        <div class="grid">
-            <div class="tile">
-                <h3>Feature One</h3>
-                <p>This tile demonstrates the interactive cursor behavior. The cursor will lock onto the tile and follow your mouse movements with a subtle parallax effect.</p>
-            </div>
-            
-            <div class="tile">
-                <h3>Feature Two</h3>
-                <p>Each tile responds individually to cursor movement, creating an engaging and dynamic user experience.</p>
-            </div>
-            
-            <div class="tile">
-                <h3>Feature Three</h3>
-                <p>The cursor system adapts to different element sizes and maintains smooth animations throughout the interaction.</p>
-            </div>
-        </div>
-        
-        <h2>Scroll Behavior</h2>
-        <p>Scroll down to see how the cursor maintains its position relative to the viewport while scrolling.</p>
-        
-        <p>The cursor system includes touch detection, so on mobile devices, the custom cursor is automatically hidden to provide the native touch experience.</p>
-        
-        <p>Try hovering over different elements to see the variety of cursor behaviors implemented in this system.</p>
-    </div>
-    
-    <div class="footer">
-        <h3>Footer Links</h3>
-        <a href="#">About</a>
-        <a href="#">Contact</a>
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-    </div>
-    
-    <button class="fab" id="fab">
-        <svg viewBox="0 0 24 24">
-            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-        </svg>
-    </button>
+  <div id="cursor"></div>
 
-    <script>
-        const DEFAULT_CURSOR_SIZE = 36;
+  <script>
+    const DEFAULT_SIZE = 36;
+    const cursor = document.getElementById("cursor");
+    let isLocked = false;
 
-        class Cursor {
-            constructor() {
-                this.cursorEl = document.querySelector("#cursor");
-                document.addEventListener("mousemove", this.mousemove.bind(this));
-                document.addEventListener("scroll", this.scroll.bind(this));
-                document.addEventListener("touchstart", this.touchstart.bind(this));
-                
-                let textCursorNodes = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6, p, dd, dt, figcaption, blockquote"));
-                textCursorNodes.forEach((el) => this.bindTextCursorNodes(el));
-                
-                let btnNodes = Array.from(document.querySelectorAll(".btn, .fab, .home .tile, .tile--hover, .footer a, .newsletter__button, .tile"));
-                btnNodes.forEach((el) => this.bindBtnNodes(el));
-                
-                this.currentDiameter = DEFAULT_CURSOR_SIZE / 2;
-                this.isCursorLocked = false;
-                this.isTouchLocked = false;
-                this.currentPosition = {
-                    x: -9999,
-                    y: 0
-                };
-                
-                return this.cursorEl;
-            }
+    document.addEventListener("mousemove", (e) => {
+      if (!isLocked) {
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+      }
+    });
 
-            scroll() {
-                if (!this.isCursorLocked && !this.isTouchLocked) {
-                    this.cursorEl.style.top = this.currentPosition.y + window.pageYOffset + "px";
-                    this.cursorEl.style.left = this.currentPosition.x + window.pageXOffset + "px";
-                }
-            }
+    document.addEventListener("mouseover", (e) => {
+      const el = e.target;
+      if (el.matches("a, button, .btn")) {
+        isLocked = true;
+        const rect = el.getBoundingClientRect();
+        cursor.classList.add("is-locked");
+        cursor.style.width = `${rect.width}px`;
+        cursor.style.height = `${rect.height}px`;
+        cursor.style.left = `${rect.left + rect.width / 2}px`;
+        cursor.style.top = `${rect.top + rect.height / 2}px`;
+      } else if (el.matches("p, span, h1, h2, h3, h4, h5, h6")) {
+        cursor.classList.add("cursor--text");
+      }
+    });
 
-            mousemove({x, y}) {
-                this.currentPosition = {
-                    x: x,
-                    y: y
-                };
-                if (!this.isCursorLocked && !this.isTouchLocked) {
-                    this.cursorEl.style.top = this.currentPosition.y + window.pageYOffset + "px";
-                    this.cursorEl.style.left = this.currentPosition.x + window.pageXOffset + "px";
-                }
-            }
+    document.addEventListener("mouseout", (e) => {
+      const el = e.target;
+      if (el.matches("a, button, .btn")) {
+        isLocked = false;
+        cursor.classList.remove("is-locked");
+        cursor.style.width = `${DEFAULT_SIZE}px`;
+        cursor.style.height = `${DEFAULT_SIZE}px`;
+      } else if (el.matches("p, span, h1, h2, h3, h4, h5, h6")) {
+        cursor.classList.remove("cursor--text");
+      }
+    });
 
-            touchstart() {
-                this.cursorEl.style.display = "none";
-                this.isTouchLocked = true;
-            }
-
-            bindTextCursorNodes(el) {
-                let fontSize = parseInt(window.getComputedStyle(el).getPropertyValue("font-size").replace("px", ""));
-                
-                el.addEventListener("mouseover", () => {
-                    if (!this.isTouchLocked) {
-                        this.currentDiameter = fontSize * 1.4;
-                        this.cursorEl.style.height = this.currentDiameter + "px";
-                        this.cursorEl.classList.add("cursor--text");
-                    }
-                }, {passive: true});
-                
-                el.addEventListener("mouseout", () => {
-                    if (!this.isTouchLocked) {
-                        this.currentDiameter = DEFAULT_CURSOR_SIZE;
-                        this.cursorEl.removeAttribute("style");
-                        this.cursorEl.classList.remove("cursor--text");
-                    }
-                }, {passive: true});
-            }
-
-            bindBtnNodes(el) {
-                let rect = null;
-                
-                el.addEventListener("mouseenter", (event) => {
-                    if (this.isTouchLocked) return;
-                    
-                    this.isCursorLocked = true;
-                    rect = el.getBoundingClientRect();
-                    let borderRadius = window.getComputedStyle(el).getPropertyValue("border-radius").replace("px", "");
-                    
-                    this.cursorEl.classList.add("is-locked");
-                    this.cursorEl.style.width = rect.width + "px";
-                    this.cursorEl.style.height = rect.height + "px";
-                    this.cursorEl.style.borderRadius = borderRadius + "px";
-                    this.cursorEl.style.left = rect.x + window.pageXOffset + rect.width / 2 + "px";
-                    this.cursorEl.style.top = rect.y + window.pageYOffset + rect.height / 2 + "px";
-                });
-                
-                el.addEventListener("mousemove", (event) => {
-                    if (this.isTouchLocked) return;
-                    
-                    const halfHeight = rect.height / 2;
-                    const topOffset = (event.y - rect.top - halfHeight) / halfHeight;
-                    const halfWidth = rect.width / 2;
-                    const leftOffset = (event.x - rect.left - halfWidth) / halfWidth;
-                    
-                    this.cursorEl.style.transform = `translate(calc(-50% + ${leftOffset}px), calc(-50% + ${topOffset}px))`;
-                    
-                    if (el.matches(".tile, .btn, a:not(.fab)")) {
-                        el.style.transform = `translate(${leftOffset * 6}px, ${topOffset * 6}px)`;
-                    }
-                    
-                    if (el.classList.contains("fab")) {
-                        let isToggled = el.classList.contains("fab--toggled");
-                        let extra = isToggled ? 45 : 0;
-                        el.firstElementChild.style.transform = `translate(${leftOffset * 6}px, ${topOffset * 6}px) rotate(${extra}deg)`;
-                    }
-                });
-                
-                el.addEventListener("mouseleave", (event) => {
-                    if (this.isTouchLocked) return;
-                    
-                    this.isCursorLocked = false;
-                    this.cursorEl.classList.remove("is-locked");
-                    this.cursorEl.classList.remove("cursor--text");
-                    this.cursorEl.style.borderRadius = "100%";
-                    this.cursorEl.style.width = DEFAULT_CURSOR_SIZE + "px";
-                    this.cursorEl.style.height = DEFAULT_CURSOR_SIZE + "px";
-                    
-                    el.removeAttribute("style");
-                    if (el.firstElementChild) {
-                        el.firstElementChild.removeAttribute("style");
-                    }
-                });
-            }
-        }
-
-        // Initialize the cursor
-        const cursor = new Cursor();
-
-        // Add some demo functionality for the FAB button
-        document.getElementById('fab').addEventListener('click', function() {
-            this.classList.toggle('fab--toggled');
-        });
-    </script>
+    document.addEventListener("touchstart", () => {
+      cursor.style.display = "none";
+    });
+  </script>
 </body>
 </html>
